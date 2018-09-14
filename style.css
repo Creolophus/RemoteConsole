@@ -1,0 +1,26 @@
+.tabBg {
+    font-size: 14px;
+    color: #333333;
+    width: 60%;
+    line-height: 2.8;
+    background-color: #f4f4f4;
+    border: 0;
+}
+
+.tabBg tr {
+    background-color: #ecf4fe;
+}
+
+.tabBg tr:nth-child(odd) {
+    background-color: #FFFFFF;
+}
+
+.tabBg tr td {
+    padding: 0 10px;
+}
+
+.linHight {
+    line-height: 2;
+    font-size: 15px;
+    color: #333333;
+}

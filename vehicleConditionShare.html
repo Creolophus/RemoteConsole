@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>title</title>
+		<link href="css/markdown.css" rel="stylesheet" />
+		<style type="text/css">
+			body {
+			width: 75%;
+			margin: 0 auto;
+			font-family: Tahoma, Verdana, Arial, sans-serif;
+			}
+		</style>
+	</head>
+	<body>
+		<h1 id="-html-">车况分享客户端-HTML交互文档</h1>
+		<h2 id="-">流程</h2>
+		<ul>
+			<li>客户端保证在有车况数据的情况下，显示车况分享HTML的入口。</li>
+			<li>HTML调用JS函数从客户端请求车况数据展示。</li>
+			<li>客户端收到HTML的JS函数请求后，将数据封装成下文的JSON格式回调给HTML。</li>
+		</ul>
+		<h2 id="js-">JS函数定义</h2>
+		<h4 id="-">与客户端交互的函数名</h4>
+		<blockquote>
+			<p>HTML调用该函数获取JSON车况返回</p>
+		</blockquote>
+		<p>getVehicleCondition()</p>
+		<h4 id="demo">Demo</h4>
+		<pre><code>
+			function fetchVehicleCondition() {
+			    var vehicleCondition;
+			    if (onstar.getDevice() == 'android') {
+			        window.WebViewJavascriptBridge.callHandler(
+			            'getVehicleCondition', {},
+			            function(responseData) {
+			                vehicleCondition = JSON.parse(responseData);
+			            });
+			    } else if (onstar.getDevice() == 'ios') {
+			        var rsp = "";
+			        requestAnimationFrame(function() {
+			            if (window.webkit && window.webkit.messageHandlers) {
+			                rsp = window.webkit.messageHandlers.getVehicleCondition.postMessage();
+			                vehicleCondition = rsp;
+			            } else {
+			                try {
+			                    rsp = getVehicleCondition();
+			                    vehicleCondition = rsp;
+			                } catch (err) {}
+			            }
+			        });
+			    }
+			}
+		</code></pre>
+		<h2 id="-">车况分类枚举说明</h2>
+		<blockquote>
+			<p>该值在客户端传给HTML的JSON中Key为vehicleConditionCategory</p>
+		</blockquote>
+		<table>
+			<thead>
+				<tr>
+					<th>State</th>
+					<th>Value </th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>车况优秀</td>
+					<td>0</td>
+				</tr>
+				<tr>
+					<td>车况正常</td>
+					<td>1</td>
+				</tr>
+				<tr>
+					<td>胎压异常</td>
+					<td>2</td>
+				</tr>
+				<tr>
+					<td>燃油不足8%</td>
+					<td>3</td>
+				</tr>
+				<tr>
+					<td>机油余量0%</td>
+					<td>4</td>
+				</tr>
+				<tr>
+					<td>电池电量不足</td>
+					<td>5</td>
+				</tr>
+				<tr>
+					<td>2项及以上差</td>
+					<td>6</td>
+				</tr>
+				<tr>
+					<td>无车况数据</td>
+					<td>7</td>
+				</tr>
+				<tr>
+					<td>车况数据异常</td>
+					<td>8</td>
+				</tr>
+			</tbody>
+		</table>
+		<h2 id="-json">车况数据JSON</h2>
+		<blockquote>
+			<p>客户端把本地车况数据拼成如下JSON返回给HTML</p>
+		</blockquote>
+		<h4 id="json-">JSON字段说明</h3>
+		<li>ROOT JSON 模型</li>
+	</ul>
+	<table>
+		<thead>
+			<tr>
+				<th>Key</th>
+				<th>Type</th>
+				<th>Explain</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>userInfo</td>
+				<td>Object</td>
+				<td>用户信息</td>
+			</tr>
+			<tr>
+				<td>vehicleInfo</td>
+				<td>Object</td>
+				<td>车辆信息</td>
+			</tr>
+			<tr>
+				<td>lastUpdateTime</td>
+				<td>Number</td>
+				<td>最近车况更新时间</td>
+			</tr>
+			<tr>
+				<td>diagnosticResponse</td>
+				<td>Object</td>
+				<td>车况信息</td>
+			</tr>
+		</tbody>
+	</table>
+	<ul>
+		<li>UserInfo 用户信息</li>
+	</ul>
+	<table>
+		<thead>
+			<tr>
+				<th>Key</th>
+				<th>Type</th>
+				<th>Explain</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>nickName</td>
+				<td>String</td>
+				<td>昵称</td>
+			</tr>
+			<tr>
+				<td>idpUserId</td>
+				<td>String</td>
+				<td>用户ID</td>
+			</tr>
+			<tr>
+				<td>avatar</td>
+				<td>String</td>
+				<td>头像地址</td>
+			</tr>
+		</tbody>
+	</table>
+	<ul>
+		<li>VehicleInfo 车辆信息</li>
+	</ul>
+	<table>
+		<thead>
+			<tr>
+				<th>Key</th>
+				<th>Type</th>
+				<th>Explain</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>brand</td>
+				<td>String</td>
+				<td>车的品牌英文大写(凯迪拉克\别克\雪佛兰)</td>
+			</tr>
+			<tr>
+				<td>modelDesc</td>
+				<td>String</td>
+				<td>车型</td>
+			</tr>
+			<tr>
+				<td>vehicleConditionCategory</td>
+				<td>Number</td>
+				<td>车况总体分类,与EMIP问候语对应</td>
+			</tr>
+		</tbody>
+	</table>
+	<ul>
+		<li>diagnosticResponse 车况信息</li>
+	</ul>
+	<table>
+		<thead>
+			<tr>
+				<th>Key</th>
+				<th>Type</th>
+				<th>Explain</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>name</td>
+				<td>String</td>
+				<td>车况分类标识</td>
+			</tr>
+			<tr>
+				<td>diagnosticElement</td>
+				<td>Array</td>
+				<td>该类别下车况元素数组</td>
+			</tr>
+		</tbody>
+	</table>
+	<ul>
+		<li>diagnosticElement数组中的模型</li>
+	</ul>
+	<table>
+		<thead>
+			<tr>
+				<th>Key</th>
+				<th>Type</th>
+				<th>Explain</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>name</td>
+				<td>String</td>
+				<td>车况元素名(key)</td>
+			</tr>
+			<tr>
+				<td>message</td>
+				<td>String</td>
+				<td>额外信息(目前只有标识颜色)</td>
+			</tr>
+			<tr>
+				<td>value</td>
+				<td>String</td>
+				<td>车况元素值</td>
+			</tr>
+			<tr>
+				<td>unit</td>
+				<td>String</td>
+				<td>单位</td>
+			</tr>
+		</tbody>
+	</table>
+	<h5 id="demo">Demo</h5>
+	<pre><code>
+		{
+		  "lastUpdateTime": 1535442452000,
+		  "userInfo": {
+		    "nickName": "阿西吧",
+		    "idpUserId": "onstarXXXXXX",
+		    "avatar": "https://xxx.xxx.jpg"
+		  },
+		  "vehicleInfo": {
+		    "brand": "CHEVROLET",
+		    "modelDesc": "雪佛兰 迈锐宝 XL",
+		    "vehicleConditionCategory": 0
+		  },
+		  "diagnosticResponse": [
+		    {
+		      "name": "FUEL TANK INFO",
+		      "diagnosticElement": [
+		        {
+		          "name": "FUEL AMOUNT",
+		          "message": "na",
+		          "value": "58.91",
+		          "unit": "L"
+		        },
+		        {
+		          "name": "FUEL CAPACITY",
+		          "message": "na",
+		          "value": "61.63",
+		          "unit": "L"
+		        }
+		      ]
+		    },
+		    {
+		      "name": "OIL LIFE",
+		      "diagnosticElement": [
+		        {
+		          "name": "OIL LIFE",
+		          "message": "RED",
+		          "value": "0.0",
+		          "unit": "%"
+		        }
+		      ]
+		    }
+		  ]
+		}
+	</code></pre><h2 id="-">待解决问题</h2>
+	<p>两个客户端目前逻辑有差异：</p>
+	<ul>
+		<li>iOS先处理数据源(四舍五入)，再保存到本地。</li>
+	</ul>
+	<ul>
+		<li>Android先保存数据源，不处理数据。</li>
+	</ul>
+	<p>这样会造成最后拼出返回给HTML的数据有差异。</p>
+</body>
+</html>

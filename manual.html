@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Manual</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<link href="style.css" rel="stylesheet" type="text/css"/>
+
+	</head>
+	<body>
+		<h1>iOS远程日志操作手册</h1>
+		<h2>Usage</h2>
+		<ol class="linHight">
+			<li>使用iPhone安装8.3以后的测试版Onstar App</li>
+			<li>iPhone连接WiFi =&gt; 233333333 (之后可能会改名)</li>
+			<li>确认该台iPhone已在陶量处登记，可在10.16.142.177:8088/userlist.html确认。</li>
+			<li>打开Onstar App</li>
+			<li>打开浏览器，在地址栏输入10.16.142.177:8088/?user=#name#，#name#为登记过的该台iPhone的名称</li>
+			<li>正常情况下，浏览器会显示Connect，代表已经连接成功。</li>
+		</ol>
+		<h2>PS.</h2>
+		<ol class="linHight">
+			<li>
+				由于网络原因，IP地址（即上文中的10.16.142.177）可能会有变化，每天会用脚本发送Email给各位本机的最新IP，如果输入地址后，浏览器中什么内容都没，很大可能是IP地址换了。
+			</li>
+			<li>现可以在APP"关于"界面，猛烈摇动手机查看该版本App是否支持远程Log</li>
+			<li>
+				如需在生产环境查看日志，需要另外打包安装。
+			</li>
+		</ol>
+		<h2>颜色示例</h2>
+		<table class="tabBg">
+			<tr>
+				<th>log颜色</th>
+				<th>代表含义</th>
+			</tr>
+			<tr>
+				<td style="color: #929292">系统log</td>
+				<td>系统log\SDK的log，可点击右下角按钮关闭</td>
+			</tr>
+			<tr>
+				<td style="color: #4372BA">HTTP Request</td>
+				<td>客户端像Onstar服务器发送的网络请求</td>
+			</tr>
+			<tr>
+				<td style="color: #5BBB7B">HTTP Response</td>
+				<td>Onstar后台返回的数据</td>
+			</tr>
+			<tr>
+				<td style="color: #19C3FB">HTML5加载</td>
+				<td>客户端加载HTML页面信息</td>
+			</tr>
+			<tr>
+				<td style="color: #FFA859">dealloc</td>
+				<td>客户端viewWillAppear或者dealloc</td>
+			</tr>
+			<tr>
+				<td bgcolor="D00500"></td>
+				<td>代表检测到error或者exception字段，错误信息</td>
+			</tr>
+			<tr>
+				<td bgcolor="FACC9A"></td>
+				<td>代表检测到warning字段，警告信息</td>
+			</tr>
+			<tr>
+				<td bgcolor="19C3FB"></td>
+				<td>云音乐中socket长连接信息</td>
+			</tr>
+		</table>
+	</body>
+</html>

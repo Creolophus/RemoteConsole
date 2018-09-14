@@ -1,38 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>TestNSlog</title>
+    <title>iOS Remote Log</title>
     <style>
     body {
-        margin: 0px;
+        /*margin: 0px;*/
         font-family: Courier, monospace;
         font-size: 0.9em;
     }
-    
+
     table {
         width: 100%;
         border-collapse: collapse;
     }
-    
+
     tr {
         vertical-align: top;
     }
-    
+
     tr:nth-child(odd) {
         background-color: #eeeeee;
     }
-    
+
     td {
         padding: 2px 10px;
     }
-    
+
     #footer {
         text-align: center;
         margin: 20px 0px;
         color: darkgray;
     }
-    
+
     .error {
         color: red;
         font-weight: bold;
@@ -45,22 +46,28 @@
         bottom: 90px;
         right: 50px;
         /*background: #b4d145;*/
-	}
-  .filter-button {
-    position: fixed;
-    width: 40px;
-    bottom: 90px;
-    right: 100px;
-  }
+    }
 
-	p {
-		width: 100%;
-		font-size: 0.8em;
-	}
+    .filter-button {
+        position: fixed;
+        width: 40px;
+        bottom: 90px;
+        right: 100px;
+    }
+
+    .color-demo-button {
+        position: fixed;
+        width: 40px;
+        bottom: 90px;
+        right: 150px;
+    }
+
+    p {
+        width: 100%;
+        font-size: 0.8em;
+    }
     </style>
-    
     <script src="http://lib.sinaapp.com/js/jquery/1.7.2/jquery.min.js"></script>
-
     <script>
     var refreshDelay = 500;
     var footerElement = null;
@@ -69,30 +76,48 @@
         var now = new Date();
         footerElement.innerHTML = "Last updated on " + now.toLocaleDateString() + " " + now.toLocaleTimeString() + "<br><br>webSocket链接地址:" + (wsUrl ? wsUrl : "");
     }
-
-
-    $( window ).load(function() {
+    $(window).load(function() {
         footerElement = document.getElementById("footer");
         updateTimestamp(wsUrl);
         init();
     });
-
     var shouldAutoScroll = true
+
     function floatButtonClicked() {
-      if (!shouldAutoScroll) {
-        document.getElementById("floatButton").innerHTML = '关闭滑动'
-        shouldAutoScroll = true
-      }else {
-        document.getElementById("floatButton").innerHTML = '开启滑动'
-        shouldAutoScroll = false
-      }
+        if (!shouldAutoScroll) {
+            document.getElementById("floatButton").innerHTML = '关闭滑动'
+            shouldAutoScroll = true
+        } else {
+            document.getElementById("floatButton").innerHTML = '开启滑动'
+            shouldAutoScroll = false
+        }
+    }
+    var shouldFilterSystemLog = false
+
+    function filterButtonClicked() {
+        shouldFilterSystemLog = !shouldFilterSystemLog;
+        document.getElementById("filterButton").style.background = shouldFilterSystemLog ? "#00DB17" : "#DB0007";
+        document.getElementById("filterButton").innerHTML = shouldFilterSystemLog ? "不过滤系统日志" : "过滤系统日志";
     }
 
-    var shouldFilterSystemLog = false
-    function filterButtonClicked() {
-      shouldFilterSystemLog = !shouldFilterSystemLog;
-      document.getElementById("filterButton").style.background = shouldFilterSystemLog ? "#00DB17": "#DB0007";
-      document.getElementById("filterButton").innerHTML = shouldFilterSystemLog ? "不过滤系统日志" : "过滤系统日志";
+    function colorDemoBtnClicked() {
+        window.open('manual.html')
+        window.history(-1)
+    }
+
+    function detectFeatureError(msg) {
+        if (msg.indexOf('token接口失败') >= 0) {
+            alert('检测到可能token接口报错')
+        }
+        if (msg.indexOf('从服务器刷新UserBasicInfo 三次都失败...') >= 0) {
+            alert('检测到可能suite接口报错')
+        }
+        if (msg.indexOf('从服务器获取Commands三次都失败...') >= 0) {
+            alert('检测到可能Commands接口报错')
+        }
+        if (msg.indexOf('从服务器获取Privilege三次都失败...') >= 0) {
+            alert('检测到可能avaliableFuncs接口报错')
+        }
     }
 
     var iPhone = getUrlParameter('user');
@@ -101,140 +126,134 @@
     var host = ip + ':8088/log/'
     // var host = '10.16.142.177:8088/log/'
     var wsUrl = "ws://" + host + iPhone + '/'
-
     // document.write('websocket地址:' + wsUrl);
-    updateTimestamp(wsUrl);
+    // updateTimestamp(wsUrl);
 
+    var output;
 
-    // var ipAddress = getUrlParameter('ip');
-    // var wsUri ="ws://" + ipAddress; 
-    var output;  
-
-    document.title = "LogMaster ";
-    
-    function init() { 
-        output = document.getElementById("content"); 
-        testWebSocket(); 
-    }  
- 
-    function testWebSocket() { 
-        var websocket = new WebSocket(wsUrl); 
-        websocket.onopen = function(evt) { 
-            onOpen(evt) 
-        }; 
-        websocket.onclose = function(evt) { 
-            onClose(evt) 
-        }; 
-        websocket.onmessage = function(evt) { 
-            onMessage(evt) 
-        }; 
-        websocket.onerror = function(evt) { 
-            onError(evt) 
-        }; 
-    }  
- 
-    function onOpen(evt) { 
-        writeToScreen("CONNECTED"); 
+    function init() {
+        output = document.getElementById("content");
+        testWebSocket();
     }
- 
-    function onClose(evt) { 
-        writeToScreen("DISCONNECTED"); 
-    }  
- 
-    function onMessage(evt) { 
-        writeToScreen(evt.data); 
 
-    }  
- 
-    function onError(evt) { 
-        writeToScreen( evt.data); 
-    }  
- 
-    function doSend(message) { 
-        writeToScreen("SENT: " + message);  
-        websocket.send(message); 
-    }  
- 
-    function writeToScreen(message) { 
-    	message = unescape(message.replace(/\\U/g, "%u"))
-      var tr = document.createElement('tr');  
+    function testWebSocket() {
+        var websocket = new WebSocket(wsUrl);
+        websocket.onopen = function(evt) {
+            onOpen(evt)
+        };
+        websocket.onclose = function(evt) {
+            onClose(evt)
+        };
+        websocket.onmessage = function(evt) {
+            onMessage(evt)
+        };
+        websocket.onerror = function(evt) {
+            onError(evt)
+        };
+    }
 
-      var pre = document.createElement('pre');
-      var td1 = document.createElement('td');
-      var text1 = document.createTextNode(message);
+    function onOpen(evt) {
+        writeToScreen("CONNECTED");
+    }
 
-      pre.appendChild(text1)
-      pre.style.whiteSpace = 'pre-wrap'
-      pre.style.wordWrap = 'break-word'
-      // pre.style.width = '100%'
-      td1.appendChild(pre);
-      tr.appendChild(td1);
+    function onClose(evt) {
+        writeToScreen("DISCONNECTED");
+    }
 
-      var lowerM = message.toLowerCase()
+    function onMessage(evt) {
+        writeToScreen(evt.data);
+    }
 
-      if (shouldFilterSystemLog) {
+    function onError(evt) {
+        writeToScreen(evt.data);
+    }
 
-        if (message.indexOf("[") != 0) {
-          return;
+    function doSend(message) {
+        writeToScreen("SENT: " + message);
+        websocket.send(message);
+    }
+
+    function writeToScreen(message) {
+        message = unescape(message.replace(/\\U/g, "%u"))
+        var tr = document.createElement('tr');
+        var pre = document.createElement('pre');
+        var td1 = document.createElement('td');
+        var text1 = document.createTextNode(message);
+        pre.appendChild(text1)
+        pre.style.whiteSpace = 'pre-wrap'
+        pre.style.wordWrap = 'break-word'
+        // pre.style.width = '100%'
+        td1.appendChild(pre);
+        tr.appendChild(td1);
+        //侦测登录异常
+        detectFeatureError(message)
+
+        var lowerM = message.toLowerCase()
+
+        if (shouldFilterSystemLog) {
+            if (message.indexOf("[") != 0) {
+                return;
+            }
         }
-      }
+        if (lowerM.indexOf("http response") >= 0) {
+            tr.style.color = "#5BBB7B"
+        } else if (lowerM.indexOf("http request") >= 0) {
+            tr.style.color = "#4372BA"
+        } else if (lowerM.indexOf("viewwillappear") >= 0 || lowerM.indexOf("dealloc") >= 0) {
+            tr.style.color = "#FFA859"
+        } else if (lowerM.indexOf("did read data") >= 0) {
+            pre.style.margin.top = '10px'
+            pre.style.margin.bottom = '10px'
+            pre.style.background = '#19C3FB'
+        } else if (lowerM.indexOf("h5加载") >= 0) {
+            tr.style.color = "#19C3FB"
+        } else if (stringStartsWith(lowerM, '20')) {//系统log
+            tr.style.color = '#929292'
+        }
+        if (lowerM.indexOf(" error ") >= 0 || lowerM.indexOf(" exception ") >= 0) {
+            pre.style.margin.top = '10px'
+            pre.style.margin.bottom = '10px'
+            pre.style.background = "#D00500"
+        } else if (lowerM.indexOf(" warning ") >= 0) {
+            tr.style.background = "#FACC9A"
+        }
 
-      if (lowerM.indexOf("http response") >= 0) {
-        tr.style.color = "#5BBB7B"
-      } else if (lowerM.indexOf("http request") >= 0) {
-        tr.style.color = "#4372BA"
-      } else if (lowerM.indexOf("viewwillappear") >= 0 || lowerM.indexOf("dealloc") >= 0) {
-        tr.style.color = "#E05433"
-      } else if (lowerM.indexOf("did read data") >= 0) {
-        pre.style.margin.top = '10px'
-        pre.style.margin.bottom = '10px'
-        pre.style.background = '#19C3FB'
-      } else if (lowerM.indexOf("h5加载") >= 0) {
-        tr.style.color = "#19C3FB"
-      }
+        output.appendChild(tr);
+        if (shouldAutoScroll) {
+            footerElement.scrollIntoView(false);
+        }
+        updateTimestamp(wsUrl);
+    }
 
-      if (lowerM.indexOf(" error ") >= 0 || lowerM.indexOf(" exception ") >= 0) {
-        pre.style.margin.top = '10px'
-        pre.style.margin.bottom = '10px'
-      	pre.style.background = "#D00500"
-      } else if (lowerM.indexOf(" warning ") >= 0) {
-        tr.style.background = "#FACC9A"
-      }
-      
-      output.appendChild(tr);
-      if (shouldAutoScroll) {
-          footerElement.scrollIntoView(false);
-      }
-      updateTimestamp(wsUrl);
-
-    }  
+    function stringStartsWith(string, prefix) {
+        return string.slice(0, prefix.length) == prefix;
+    }
 
     function getUrlParameter(sParam) {
-          var sPageURL = decodeURIComponent(window.location.search.substring(1)),
-              sURLVariables = sPageURL.split('&'),
-              sParameterName,
-              i;
-
-          for (i = 0; i < sURLVariables.length; i++) {
-              sParameterName = sURLVariables[i].split('=');
-
-              if (sParameterName[0] === sParam) {
-                  return sParameterName[1] === undefined ? true : sParameterName[1];
-              }
-          }
-      }
+        var sPageURL = decodeURIComponent(window.location.search.substring(1)),
+            sURLVariables = sPageURL.split('&'),
+            sParameterName,
+            i;
+        for (i = 0; i < sURLVariables.length; i++) {
+            sParameterName = sURLVariables[i].split('=');
+            if (sParameterName[0] === sParam) {
+                return sParameterName[1] === undefined ? true : sParameterName[1];
+            }
+        }
+    }
     </script>
 </head>
 
 <body>
-    <div class="float-button"> 
-      <button type="button" id="floatButton" onclick="floatButtonClicked()">关闭滑动</button>
+    <div class="float-button">
+        <button type="button" id="floatButton" onclick="floatButtonClicked()">关闭滑动</button>
     </div>
-    <div class="filter-button"> 
-      <button type="button" id="filterButton" onclick="filterButtonClicked()">过滤系统日志</button>
+    <div class="filter-button">
+        <button type="button" id="filterButton" onclick="filterButtonClicked()">过滤系统日志</button>
     </div>
-
-
+    <div class="color-demo-button">
+        <button type="button" id="filterButton" onclick="colorDemoBtnClicked()">颜色示例</button>
+    </div>
     <table>
         <tbody id="content"></tbody>
     </table>
